@@ -33,7 +33,7 @@ function resetDemoData(): void {
         </ul>
       </div>
 
-      <div class="sidebar-section">
+      <div class="sidebar-section sidebar-actions">
         <div class="section-title">快捷操作</div>
         <button class="ghost-action" type="button" @click="resetDemoData">恢复演示数据</button>
       </div>

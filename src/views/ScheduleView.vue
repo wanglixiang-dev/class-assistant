@@ -15,7 +15,7 @@ const conflictCount = computed(() => store.conflictIds.size);
         <p class="eyebrow">周视图</p>
         <h2 id="scheduleTitle">第 {{ store.currentWeek }} 周课表</h2>
       </div>
-      <div class="toolbar">
+      <div class="toolbar week-toolbar">
         <button class="icon-button" type="button" aria-label="上一周" @click="store.previousWeek">‹</button>
         <button class="icon-button" type="button" aria-label="下一周" @click="store.nextWeek">›</button>
         <RouterLink class="primary-button link-button" :to="{ name: 'course-new' }">+ 添加课程</RouterLink>

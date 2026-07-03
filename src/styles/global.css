@@ -29,6 +29,10 @@ body {
     "Microsoft YaHei", sans-serif;
 }
 
+#app {
+  min-height: 100vh;
+}
+
 button,
 input,
 select,
@@ -46,7 +50,7 @@ a {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: clamp(220px, 22vw, 280px) minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -114,6 +118,8 @@ a {
 }
 
 .main-panel {
+  width: 100%;
+  max-width: 1440px;
   padding: 28px;
   min-width: 0;
 }
@@ -237,6 +243,10 @@ a {
   position: relative;
 }
 
+.schedule-mobile {
+  display: none;
+}
+
 .grid-cell,
 .grid-head,
 .period-cell {
@@ -310,6 +320,77 @@ a {
   color: #b42318;
   font-size: 12px;
   font-weight: 700;
+}
+
+.day-section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+
+.day-section h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.mobile-course-list {
+  display: grid;
+  gap: 10px;
+}
+
+.mobile-course-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 92px;
+  padding: 12px;
+  color: var(--text);
+  text-decoration: none;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--primary);
+}
+
+.mobile-course-card.conflict {
+  background: var(--danger-soft);
+  border-color: #ffccc7;
+}
+
+.mobile-course-time {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.mobile-course-title {
+  margin-top: 5px;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.mobile-course-meta {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.mobile-conflict-tag {
+  flex: 0 0 auto;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mobile-day-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .empty-state {
@@ -538,6 +619,7 @@ a {
   .sidebar {
     position: static;
     padding: 18px;
+    gap: 16px;
   }
 
   .main-panel {
@@ -558,6 +640,12 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .course-form,
+  .detail-layout,
+  .topbar.compact {
+    max-width: none;
+  }
+
   .schedule-grid {
     grid-template-columns: 64px repeat(7, minmax(112px, 1fr));
     grid-template-rows: 44px repeat(12, 60px);
@@ -565,9 +653,67 @@ a {
 }
 
 @media (max-width: 560px) {
+  body {
+    background: #ffffff;
+  }
+
+  .sidebar {
+    padding: 14px 14px 12px;
+  }
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand h1 {
+    font-size: 19px;
+  }
+
+  .sidebar-section:not(.sidebar-actions) {
+    display: none;
+  }
+
+  .sidebar-actions {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .sidebar-actions .section-title {
+    display: none;
+  }
+
+  .ghost-action {
+    min-height: 38px;
+  }
+
+  .main-panel {
+    padding: 14px;
+  }
+
+  .topbar {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .topbar h2 {
+    font-size: 22px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
   .toolbar,
   .form-actions {
     width: 100%;
+  }
+
+  .toolbar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  }
+
+  .week-toolbar {
+    grid-template-columns: 42px 42px minmax(0, 1fr);
   }
 
   .primary-button,
@@ -576,9 +722,59 @@ a {
     flex: 1;
   }
 
+  .toolbar .primary-button,
+  .toolbar .secondary-button,
+  .toolbar .danger-button {
+    width: 100%;
+  }
+
+  .schedule-desktop {
+    display: none;
+  }
+
+  .schedule-mobile {
+    display: grid;
+    gap: 12px;
+  }
+
   .course-form,
   .detail-main,
   .detail-side {
     padding: 16px;
+  }
+
+  .course-form,
+  .detail-main,
+  .detail-side,
+  .day-section,
+  .empty-state,
+  .conflict-banner,
+  .form-warning {
+    box-shadow: none;
+  }
+
+  .form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .detail-title-row {
+    align-items: flex-start;
+  }
+
+  .detail-title-row h3 {
+    font-size: 22px;
+  }
+
+  .dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .toast {
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    max-width: none;
   }
 }
