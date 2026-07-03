@@ -5,6 +5,7 @@ import { createCourse, createDemoCourses, inferLocationFromClassroom, validateCo
 import { detectConflicts, getConflictIdsForWeek } from "../domain/conflict";
 import { getCoursesForWeek, maxWeek } from "../domain/week";
 import { hasAmapApiKey, resolveAmapPlaces } from "../services/amap";
+import { deleteRemoteCourse, fetchRemoteCourses, getAuthToken, replaceRemoteCourses, saveRemoteCourse } from "../services/api";
 import { loadCourses, loadCurrentWeek, saveCourses, saveCurrentWeek } from "../services/storage";
 
 export const useCourseStore = defineStore("course", () => {
@@ -12,17 +13,54 @@ export const useCourseStore = defineStore("course", () => {
   const currentWeek = ref(loadCurrentWeek());
   const lastStorageError = ref("");
   const lastLocationResolveMessage = ref("");
+  const usingRemoteData = ref(false);
 
   const weekCourses = computed(() => getCoursesForWeek(courses.value, currentWeek.value));
   const conflictIds = computed(() => getConflictIdsForWeek(courses.value, currentWeek.value));
 
-  function persist(): void {
+  function persistLocal(): void {
     try {
       saveCourses(courses.value);
       lastStorageError.value = "";
     } catch {
       lastStorageError.value = "本地数据保存失败";
     }
+  }
+
+  async function persistCourse(course: Course): Promise<void> {
+    persistLocal();
+    if (!usingRemoteData.value || !getAuthToken()) return;
+
+    try {
+      await saveRemoteCourse(course);
+      lastStorageError.value = "";
+    } catch (error) {
+      lastStorageError.value = `数据库保存失败，已保留本地副本：${formatErrorMessage(error)}`;
+    }
+  }
+
+  async function loadRemoteCourses(): Promise<void> {
+    if (!getAuthToken()) return;
+
+    try {
+      const remoteCourses = await fetchRemoteCourses();
+      if (remoteCourses.length === 0 && courses.value.length > 0) {
+        courses.value = await replaceRemoteCourses(courses.value);
+      } else {
+        courses.value = remoteCourses;
+      }
+      usingRemoteData.value = true;
+      lastStorageError.value = "";
+    } catch (error) {
+      usingRemoteData.value = false;
+      lastStorageError.value = `数据库读取失败，当前显示本地课程：${formatErrorMessage(error)}`;
+    }
+  }
+
+  function useLocalCourses(): void {
+    courses.value = loadCourses();
+    usingRemoteData.value = false;
+    lastStorageError.value = "";
   }
 
   function setCurrentWeek(week: number): void {
@@ -187,7 +225,7 @@ export const useCourseStore = defineStore("course", () => {
     } else {
       courses.value.push(course);
     }
-    persist();
+    await persistCourse(course);
     return course;
   }
 
@@ -201,19 +239,35 @@ export const useCourseStore = defineStore("course", () => {
     if (index < 0) return;
 
     courses.value[index] = resolvedCourse;
-    persist();
+    await persistCourse(resolvedCourse);
   }
 
-  function deleteCourse(id: string): void {
+  async function deleteCourse(id: string): Promise<void> {
     courses.value = courses.value.filter((course) => course.id !== id);
-    persist();
+    persistLocal();
+
+    if (!usingRemoteData.value || !getAuthToken()) return;
+    try {
+      await deleteRemoteCourse(id);
+      lastStorageError.value = "";
+    } catch (error) {
+      lastStorageError.value = `数据库删除失败，请稍后重试：${formatErrorMessage(error)}`;
+    }
   }
 
-  function resetDemoData(): void {
+  async function resetDemoData(): Promise<void> {
     courses.value = createDemoCourses();
     currentWeek.value = 3;
-    persist();
+    persistLocal();
     saveCurrentWeek(currentWeek.value);
+
+    if (!usingRemoteData.value || !getAuthToken()) return;
+    try {
+      await replaceRemoteCourses(courses.value);
+      lastStorageError.value = "";
+    } catch (error) {
+      lastStorageError.value = `数据库保存失败，已保留本地副本：${formatErrorMessage(error)}`;
+    }
   }
 
   return {
@@ -222,6 +276,7 @@ export const useCourseStore = defineStore("course", () => {
     weekCourses,
     conflictIds,
     lastStorageError,
+    usingRemoteData,
     previousWeek,
     nextWeek,
     setCurrentWeek,
@@ -230,8 +285,14 @@ export const useCourseStore = defineStore("course", () => {
     validate,
     getConflicts,
     saveCourse,
+    loadRemoteCourses,
+    useLocalCourses,
     resolveCourseLocation,
     deleteCourse,
     resetDemoData,
   };
 });
+
+function formatErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "未知错误";
+}

@@ -21,6 +21,26 @@ export default defineConfig(({ mode }) => {
             return `/v3/assistant/inputtips?${params.toString()}`;
           },
         },
+        "/api/auth": {
+          target: "http://127.0.0.1:4174",
+          changeOrigin: true,
+        },
+        "/api/courses": {
+          target: "http://127.0.0.1:4174",
+          changeOrigin: true,
+        },
+        "/api/health": {
+          target: "http://127.0.0.1:4174",
+          changeOrigin: true,
+        },
+        "/api/me": {
+          target: "http://127.0.0.1:4174",
+          changeOrigin: true,
+        },
+        "/api/reminders": {
+          target: "http://127.0.0.1:4174",
+          changeOrigin: true,
+        },
       },
     },
   };

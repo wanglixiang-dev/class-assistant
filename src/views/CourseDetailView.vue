@@ -51,8 +51,8 @@ function openNavigation(): void {
   );
 }
 
-function deleteCourse(): void {
-  store.deleteCourse(props.id);
+async function deleteCourse(): Promise<void> {
+  await store.deleteCourse(props.id);
   confirmDeleteOpen.value = false;
   router.push({ name: "schedule" });
 }

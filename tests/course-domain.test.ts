@@ -85,6 +85,34 @@ describe("location adapter", () => {
     await expect(resolveAmapPlaces("教学楼 A101", "")).resolves.toEqual([]);
   });
 
+  it("ignores amap tips with non-string location", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({
+          status: "1",
+          tips: [
+            { name: "无坐标地点", location: [] },
+            { name: "有效地点", address: "校园", location: "116.1,39.9" },
+          ],
+        }),
+        { status: 200 }
+      );
+
+    try {
+      await expect(resolveAmapPlaces("教学楼 A101", "fake-key")).resolves.toEqual([
+        {
+          name: "有效地点",
+          address: "校园",
+          longitude: 116.1,
+          latitude: 39.9,
+        },
+      ]);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("preserves course color when editing", () => {
     const courses = createDemoCourses();
     const original = courses[0];

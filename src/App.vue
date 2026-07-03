@@ -1,13 +1,29 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "./stores/authStore";
 import { useCourseStore } from "./stores/courseStore";
 
+const authStore = useAuthStore();
 const store = useCourseStore();
 const router = useRouter();
 
-function resetDemoData(): void {
+onMounted(async () => {
+  await authStore.initialize();
+  if (authStore.user) {
+    await store.loadRemoteCourses();
+  }
+});
+
+async function resetDemoData(): Promise<void> {
   if (!window.confirm("恢复演示数据会覆盖当前本地课程，是否继续？")) return;
-  store.resetDemoData();
+  await store.resetDemoData();
+  router.push({ name: "schedule" });
+}
+
+function logout(): void {
+  authStore.logout();
+  store.useLocalCourses();
   router.push({ name: "schedule" });
 }
 </script>
@@ -35,6 +51,9 @@ function resetDemoData(): void {
 
       <div class="sidebar-section sidebar-actions">
         <div class="section-title">快捷操作</div>
+        <div v-if="authStore.user" class="account-chip">{{ authStore.user.email }}</div>
+        <RouterLink v-else class="ghost-action link-button" :to="{ name: 'login' }">邮箱登录</RouterLink>
+        <button v-if="authStore.user" class="ghost-action" type="button" @click="logout">退出登录</button>
         <button class="ghost-action" type="button" @click="resetDemoData">恢复演示数据</button>
       </div>
     </aside>

@@ -15,7 +15,7 @@ export interface AmapPlace {
 interface AmapTip {
   name?: string;
   address?: string;
-  location?: string;
+  location?: unknown;
 }
 
 interface AmapInputtipsResponse {
@@ -62,21 +62,30 @@ export async function resolveAmapPlaces(keyword: string, apiKey = import.meta.en
   if (!Array.isArray(payload.tips)) return [];
 
   return payload.tips.flatMap((tip) => {
-    if (typeof tip === "string" || !tip.location || !tip.name) return [];
-    const [longitudeRaw, latitudeRaw] = tip.location.split(",");
-    const longitude = Number(longitudeRaw);
-    const latitude = Number(latitudeRaw);
-    if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return [];
+    if (typeof tip === "string" || !tip.name) return [];
+    const coordinate = parseAmapLocation(tip.location);
+    if (!coordinate) return [];
 
     return [
       {
         name: tip.name,
         address: tip.address || "",
-        longitude,
-        latitude,
+        longitude: coordinate.longitude,
+        latitude: coordinate.latitude,
       },
     ];
   });
+}
+
+function parseAmapLocation(location: unknown): AmapOrigin | null {
+  if (typeof location !== "string") return null;
+
+  const [longitudeRaw, latitudeRaw] = location.split(",");
+  const longitude = Number(longitudeRaw);
+  const latitude = Number(latitudeRaw);
+  if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return null;
+
+  return { longitude, latitude };
 }
 
 export function buildAmapNavigationUrl(course: Course, origin?: AmapOrigin): string {

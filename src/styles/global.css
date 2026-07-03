@@ -206,6 +206,21 @@ a {
   border-color: rgba(255, 255, 255, 0.18);
 }
 
+.sidebar-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.account-chip {
+  padding: 10px 12px;
+  color: #dce5ef;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
 .icon-button {
   width: 42px;
   padding: 0;
@@ -418,6 +433,10 @@ a {
   box-shadow: var(--shadow);
 }
 
+.login-form {
+  max-width: 560px;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -460,6 +479,11 @@ a {
 .field textarea:focus {
   outline: 2px solid rgba(23, 107, 135, 0.25);
   border-color: var(--primary);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .field-error {

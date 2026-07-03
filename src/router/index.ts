@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import ScheduleView from "../views/ScheduleView.vue";
 import CourseFormView from "../views/CourseFormView.vue";
 import CourseDetailView from "../views/CourseDetailView.vue";
+import LoginView from "../views/LoginView.vue";
 
 export const router = createRouter({
   history: createWebHashHistory(),
@@ -27,6 +28,11 @@ export const router = createRouter({
       name: "course-edit",
       component: CourseFormView,
       props: true,
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: LoginView,
     },
   ],
 });
