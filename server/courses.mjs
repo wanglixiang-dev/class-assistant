@@ -18,15 +18,20 @@ export function createCourseRepository(db) {
 
   function replaceCourses(userId, courses) {
     const now = new Date().toISOString();
-    const replace = db.transaction((items) => {
+    const insert = db.prepare("INSERT INTO courses (id, user_id, payload, updated_at) VALUES (?, ?, ?, ?)");
+
+    db.exec("BEGIN");
+    try {
       db.prepare("DELETE FROM courses WHERE user_id = ?").run(userId);
-      const insert = db.prepare("INSERT INTO courses (id, user_id, payload, updated_at) VALUES (?, ?, ?, ?)");
-      for (const course of items) {
+      for (const course of courses) {
         insert.run(course.id, userId, JSON.stringify(course), now);
       }
-    });
+      db.exec("COMMIT");
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
 
-    replace(courses);
     return courses;
   }
 
