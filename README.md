@@ -128,11 +128,21 @@ LOGIN_CODE_MINUTES=10
 SESSION_DAYS=30
 REMINDER_DAYS_BEFORE=7,3,1
 REMINDER_SCAN_MINUTES=60
-MAIL_FROM=课表助手 <no-reply@example.com>
-RESEND_API_KEY=你的 Resend API Key
+MAIL_FROM=课表助手 <no-reply@mail.wanglx.top>
+DIRECTMAIL_SMTP_HOST=smtpdm.aliyun.com
+DIRECTMAIL_SMTP_PORT=465
+DIRECTMAIL_SMTP_SECURE=true
+DIRECTMAIL_SMTP_USER=你的阿里云 DirectMail SMTP 用户名
+DIRECTMAIL_SMTP_PASSWORD=你的阿里云 DirectMail SMTP 密码
 ```
 
-配置 `RESEND_API_KEY` 后，系统会通过 Resend 发送登录验证码和考试提醒邮件；未配置时使用控制台邮件适配器。
+配置 `DIRECTMAIL_SMTP_USER` 和 `DIRECTMAIL_SMTP_PASSWORD` 后，系统会通过阿里云 DirectMail 发送登录验证码和考试提醒邮件；未配置时使用控制台邮件适配器。
+
+阿里云 DirectMail 发信域名为 `mail.wanglx.top` 时，建议将 `MAIL_FROM` 配成已在 DirectMail 控制台验证通过的发信地址，例如：
+
+```text
+MAIL_FROM=课表助手 <no-reply@mail.wanglx.top>
+```
 
 ## 当前功能
 
