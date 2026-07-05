@@ -6,7 +6,7 @@ import { detectConflicts, getConflictIdsForWeek } from "../domain/conflict";
 import { getCoursesForWeek, maxWeek } from "../domain/week";
 import { hasAmapApiKey, resolveAmapPlaces } from "../services/amap";
 import { deleteRemoteCourse, fetchRemoteCourses, getAuthToken, replaceRemoteCourses, saveRemoteCourse } from "../services/api";
-import { loadCourses, loadCurrentWeek, saveCourses, saveCurrentWeek } from "../services/storage";
+import { hasStoredCourses, loadCourses, loadCurrentWeek, saveCourses, saveCurrentWeek } from "../services/storage";
 
 export const useCourseStore = defineStore("course", () => {
   const courses = ref<Course[]>(loadCourses());
@@ -44,7 +44,7 @@ export const useCourseStore = defineStore("course", () => {
 
     try {
       const remoteCourses = await fetchRemoteCourses();
-      if (remoteCourses.length === 0 && courses.value.length > 0) {
+      if (remoteCourses.length === 0 && hasStoredCourses() && courses.value.length > 0 && !isDemoCourseSet(courses.value)) {
         courses.value = await replaceRemoteCourses(courses.value);
       } else {
         courses.value = remoteCourses;
@@ -295,4 +295,9 @@ export const useCourseStore = defineStore("course", () => {
 
 function formatErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "未知错误";
+}
+
+function isDemoCourseSet(courses: Course[]): boolean {
+  const demoIds = new Set(createDemoCourses().map((course) => course.id));
+  return courses.length > 0 && courses.every((course) => demoIds.has(course.id));
 }

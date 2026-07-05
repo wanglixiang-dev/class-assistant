@@ -9,9 +9,7 @@ const LEGACY_WEEK_KEY = "class-assistant-prototype-week";
 export function loadCourses(): Course[] {
   const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (!raw) {
-    const demoCourses = createDemoCourses();
-    saveCourses(demoCourses);
-    return demoCourses;
+    return createDemoCourses();
   }
 
   try {
@@ -22,6 +20,10 @@ export function loadCourses(): Course[] {
   } catch {
     return [];
   }
+}
+
+export function hasStoredCourses(): boolean {
+  return Boolean(localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY));
 }
 
 export function saveCourses(courses: Course[]): void {

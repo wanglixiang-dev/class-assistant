@@ -54,7 +54,7 @@ function logout(): void {
         <div v-if="authStore.user" class="account-chip">{{ authStore.user.email }}</div>
         <RouterLink v-else class="ghost-action link-button" :to="{ name: 'login' }">邮箱登录</RouterLink>
         <button v-if="authStore.user" class="ghost-action" type="button" @click="logout">退出登录</button>
-        <button class="ghost-action" type="button" @click="resetDemoData">恢复演示数据</button>
+        <button v-if="!authStore.user" class="ghost-action" type="button" @click="resetDemoData">恢复演示数据</button>
       </div>
     </aside>
 

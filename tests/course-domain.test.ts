@@ -49,11 +49,55 @@ describe("week filtering and conflicts", () => {
   });
 
   it("detects overlapped weekday, week and period as conflict", () => {
-    const courses = createDemoCourses();
-    const math = courses.find((course) => course.id === "course_math");
+    const math = createCourse(
+      {
+        name: "高等数学",
+        teacher: "",
+        classroom: "",
+        weekday: 1,
+        startPeriod: 1,
+        endPeriod: 2,
+        startWeek: 1,
+        endWeek: 16,
+        homework: "",
+        examDate: "",
+        note: "",
+        locationName: "",
+        locationAddress: "",
+        longitude: null,
+        latitude: null,
+      },
+      []
+    );
+    const physics = createCourse(
+      {
+        name: "大学物理",
+        teacher: "",
+        classroom: "",
+        weekday: 1,
+        startPeriod: 2,
+        endPeriod: 3,
+        startWeek: 2,
+        endWeek: 10,
+        homework: "",
+        examDate: "",
+        note: "",
+        locationName: "",
+        locationAddress: "",
+        longitude: null,
+        latitude: null,
+      },
+      [math]
+    );
+    const courses = [math, physics];
 
-    expect(math).toBeDefined();
-    expect(detectConflicts(courses, math!).map((course) => course.id)).toContain("course_physics");
+    expect(detectConflicts(courses, math).map((course) => course.id)).toContain(physics.id);
+  });
+
+  it("keeps demo courses conflict-free", () => {
+    const courses = createDemoCourses();
+
+    expect(courses.flatMap((course) => detectConflicts(courses, course))).toHaveLength(0);
   });
 
   it("does not report conflicts across different weekdays", () => {
