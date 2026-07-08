@@ -3,6 +3,7 @@ import ScheduleView from "../views/ScheduleView.vue";
 import CourseFormView from "../views/CourseFormView.vue";
 import CourseDetailView from "../views/CourseDetailView.vue";
 import LoginView from "../views/LoginView.vue";
+import SettingsView from "../views/SettingsView.vue";
 
 export const router = createRouter({
   history: createWebHashHistory(),
@@ -33,6 +34,11 @@ export const router = createRouter({
       path: "/login",
       name: "login",
       component: LoginView,
+    },
+    {
+      path: "/settings",
+      name: "settings",
+      component: SettingsView,
     },
   ],
 });

@@ -1,3 +1,5 @@
+export type WeekType = "all" | "odd" | "even";
+
 export interface Course {
   id: string;
   name: string;
@@ -8,6 +10,7 @@ export interface Course {
   endPeriod: number;
   startWeek: number;
   endWeek: number;
+  weekType: WeekType;
   color: string;
   homework: string;
   examDate: string;
@@ -20,8 +23,9 @@ export interface Course {
   updatedAt: string;
 }
 
-export type CourseInput = Omit<Course, "id" | "color" | "createdAt" | "updatedAt"> & {
+export type CourseInput = Omit<Course, "id" | "weekType" | "color" | "createdAt" | "updatedAt"> & {
   id?: string;
+  weekType?: WeekType;
   color?: string;
   createdAt?: string;
 };
@@ -41,6 +45,10 @@ export const courseColors = [
   "#ffd6c2",
   "#c7e1e8",
 ];
+
+export function normalizeWeekType(value: unknown): WeekType {
+  return value === "odd" || value === "even" ? value : "all";
+}
 
 export function generateCourseId(): string {
   return `course_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -130,6 +138,7 @@ export function createCourse(input: CourseInput, existingCourses: Course[]): Cou
     endPeriod: Number(input.endPeriod),
     startWeek: Number(input.startWeek),
     endWeek: Number(input.endWeek),
+    weekType: normalizeWeekType(input.weekType),
     color: input.color || assignCourseColor(existingCourses, id),
     homework: input.homework.trim(),
     examDate: input.examDate,
@@ -156,6 +165,7 @@ export function createDemoCourses(): Course[] {
       endPeriod: 2,
       startWeek: 1,
       endWeek: 16,
+      weekType: "all",
       color: courseColors[0],
       homework: "完成第 3 章课后习题，周五前提交。",
       examDate: "2026-11-20",
@@ -177,6 +187,7 @@ export function createDemoCourses(): Course[] {
       endPeriod: 2,
       startWeek: 1,
       endWeek: 12,
+      weekType: "all",
       color: courseColors[2],
       homework: "准备 3 分钟课堂展示。",
       examDate: "",
@@ -198,6 +209,7 @@ export function createDemoCourses(): Course[] {
       endPeriod: 4,
       startWeek: 1,
       endWeek: 16,
+      weekType: "all",
       color: courseColors[3],
       homework: "完成数组练习题。",
       examDate: "",
@@ -219,6 +231,7 @@ export function createDemoCourses(): Course[] {
       endPeriod: 4,
       startWeek: 3,
       endWeek: 16,
+      weekType: "all",
       color: courseColors[5],
       homework: "",
       examDate: "",
@@ -240,6 +253,7 @@ export function createDemoCourses(): Course[] {
       endPeriod: 2,
       startWeek: 2,
       endWeek: 10,
+      weekType: "all",
       color: courseColors[4],
       homework: "",
       examDate: "2026-12-05",

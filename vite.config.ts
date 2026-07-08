@@ -41,6 +41,10 @@ export default defineConfig(({ mode }) => {
           target: "http://127.0.0.1:4174",
           changeOrigin: true,
         },
+        "/api/settings": {
+          target: "http://127.0.0.1:4174",
+          changeOrigin: true,
+        },
       },
     },
   };

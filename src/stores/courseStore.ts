@@ -1,22 +1,32 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import type { Course, CourseInput, CourseValidationResult } from "../domain/course";
-import { createCourse, createDemoCourses, inferLocationFromClassroom, validateCourse } from "../domain/course";
+import { createCourse, createDemoCourses, inferLocationFromClassroom, normalizeWeekType, validateCourse } from "../domain/course";
 import { detectConflicts, getConflictIdsForWeek } from "../domain/conflict";
-import { getCoursesForWeek, maxWeek } from "../domain/week";
+import { getCoursesForWeek, getWeekForDate, maxWeek } from "../domain/week";
 import { hasAmapApiKey, resolveAmapPlaces } from "../services/amap";
 import { deleteRemoteCourse, fetchRemoteCourses, getAuthToken, replaceRemoteCourses, saveRemoteCourse } from "../services/api";
-import { hasStoredCourses, loadCourses, loadCurrentWeek, saveCourses, saveCurrentWeek } from "../services/storage";
+import {
+  hasStoredCourses,
+  loadCourses,
+  loadCurrentWeek,
+  loadSemesterStart,
+  saveCourses,
+  saveCurrentWeek,
+  saveSemesterStart,
+} from "../services/storage";
 
 export const useCourseStore = defineStore("course", () => {
+  const semesterStart = ref(loadSemesterStart());
   const courses = ref<Course[]>(loadCourses());
-  const currentWeek = ref(loadCurrentWeek());
+  const currentWeek = ref(getWeekForDate(semesterStart.value) ?? loadCurrentWeek());
   const lastStorageError = ref("");
   const lastLocationResolveMessage = ref("");
   const usingRemoteData = ref(false);
 
   const weekCourses = computed(() => getCoursesForWeek(courses.value, currentWeek.value));
   const conflictIds = computed(() => getConflictIdsForWeek(courses.value, currentWeek.value));
+  const todayWeek = computed(() => getWeekForDate(semesterStart.value));
 
   function persistLocal(): void {
     try {
@@ -47,7 +57,7 @@ export const useCourseStore = defineStore("course", () => {
       if (remoteCourses.length === 0 && hasStoredCourses() && courses.value.length > 0 && !isDemoCourseSet(courses.value)) {
         courses.value = await replaceRemoteCourses(courses.value);
       } else {
-        courses.value = remoteCourses;
+        courses.value = remoteCourses.map(normalizeCourse);
       }
       usingRemoteData.value = true;
       lastStorageError.value = "";
@@ -74,6 +84,16 @@ export const useCourseStore = defineStore("course", () => {
 
   function nextWeek(): void {
     setCurrentWeek(currentWeek.value + 1);
+  }
+
+  function goToCurrentWeek(): void {
+    if (todayWeek.value !== null) setCurrentWeek(todayWeek.value);
+  }
+
+  function setSemesterStart(date: string): void {
+    semesterStart.value = date;
+    saveSemesterStart(date);
+    goToCurrentWeek();
   }
 
   function getCourseById(id: string): Course | undefined {
@@ -255,6 +275,20 @@ export const useCourseStore = defineStore("course", () => {
     }
   }
 
+  async function importCourses(imported: Course[], importedSemesterStart: string): Promise<void> {
+    courses.value = imported.map(normalizeCourse);
+    persistLocal();
+    if (importedSemesterStart) setSemesterStart(importedSemesterStart);
+
+    if (!usingRemoteData.value || !getAuthToken()) return;
+    try {
+      courses.value = await replaceRemoteCourses(courses.value);
+      lastStorageError.value = "";
+    } catch (error) {
+      lastStorageError.value = `数据库保存失败，已保留本地副本：${formatErrorMessage(error)}`;
+    }
+  }
+
   async function resetDemoData(): Promise<void> {
     courses.value = createDemoCourses();
     currentWeek.value = 3;
@@ -275,10 +309,14 @@ export const useCourseStore = defineStore("course", () => {
     currentWeek,
     weekCourses,
     conflictIds,
+    semesterStart,
+    todayWeek,
     lastStorageError,
     usingRemoteData,
     previousWeek,
     nextWeek,
+    goToCurrentWeek,
+    setSemesterStart,
     setCurrentWeek,
     lastLocationResolveMessage,
     getCourseById,
@@ -289,12 +327,17 @@ export const useCourseStore = defineStore("course", () => {
     useLocalCourses,
     resolveCourseLocation,
     deleteCourse,
+    importCourses,
     resetDemoData,
   };
 });
 
 function formatErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "未知错误";
+}
+
+function normalizeCourse(course: Course): Course {
+  return { ...course, weekType: normalizeWeekType(course.weekType) };
 }
 
 function isDemoCourseSet(courses: Course[]): boolean {

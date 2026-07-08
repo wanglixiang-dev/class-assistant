@@ -40,6 +40,12 @@ function migrate(db) {
       PRIMARY KEY (id, user_id)
     );
 
+    CREATE TABLE IF NOT EXISTS user_settings (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      payload TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS reminder_logs (
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       course_id TEXT NOT NULL,

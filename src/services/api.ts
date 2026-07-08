@@ -68,6 +68,24 @@ export async function deleteRemoteCourse(id: string): Promise<void> {
   });
 }
 
+export interface ReminderSettings {
+  examReminderEnabled: boolean;
+  reminderDaysBefore: number[];
+}
+
+export async function fetchReminderSettings(): Promise<ReminderSettings> {
+  const result = await apiRequest<{ settings: ReminderSettings }>("/api/settings");
+  return result.settings;
+}
+
+export async function saveReminderSettings(settings: ReminderSettings): Promise<ReminderSettings> {
+  const result = await apiRequest<{ settings: ReminderSettings }>("/api/settings", {
+    method: "PUT",
+    body: { settings },
+  });
+  return result.settings;
+}
+
 async function apiRequest<T>(path: string, options: { auth?: boolean; body?: unknown; method?: string } = {}): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

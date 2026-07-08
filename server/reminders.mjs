@@ -1,12 +1,15 @@
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export function createReminderService(db, emailService, config) {
+export function createReminderService(db, emailService, config, settingsRepository) {
   async function scanAndSend() {
     const today = startOfLocalDay(new Date());
     const users = db.prepare("SELECT id, email FROM users").all();
     let sentCount = 0;
 
     for (const user of users) {
+      const settings = settingsRepository.getSettings(user.id);
+      if (!settings.examReminderEnabled || settings.reminderDaysBefore.length === 0) continue;
+
       const courses = db
         .prepare("SELECT id, payload FROM courses WHERE user_id = ?")
         .all(user.id)
@@ -17,7 +20,7 @@ export function createReminderService(db, emailService, config) {
         if (!examDate) continue;
 
         const daysUntilExam = Math.round((examDate.getTime() - today.getTime()) / DAY_MS);
-        if (!config.reminderDaysBefore.includes(daysUntilExam)) continue;
+        if (!settings.reminderDaysBefore.includes(daysUntilExam)) continue;
         if (hasReminderLog(user.id, item.id, item.course.examDate, daysUntilExam)) continue;
 
         await emailService.sendEmail({

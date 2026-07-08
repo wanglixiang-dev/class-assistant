@@ -25,6 +25,7 @@ const form = reactive<CourseInput>({
   endPeriod: 0,
   startWeek: store.currentWeek,
   endWeek: Math.min(store.currentWeek + 15, maxWeek),
+  weekType: "all",
   color: "",
   homework: "",
   examDate: "",
@@ -58,6 +59,7 @@ function resetForm(): void {
     endPeriod: 0,
     startWeek: store.currentWeek,
     endWeek: Math.min(store.currentWeek + 15, maxWeek),
+    weekType: "all",
     color: "",
     homework: "",
     examDate: "",
@@ -102,19 +104,15 @@ async function save(): Promise<void> {
 </script>
 
 <template>
-  <section class="view active" aria-labelledby="formTitle">
+  <section aria-labelledby="formTitle">
     <header class="topbar compact">
-      <div>
-        <p class="eyebrow">课程管理</p>
-        <h2 id="formTitle">{{ isEditing ? "编辑课程" : "添加课程" }}</h2>
-      </div>
+      <h2 id="formTitle">{{ isEditing ? "编辑课程" : "添加课程" }}</h2>
       <button class="secondary-button" type="button" @click="goBack">返回</button>
     </header>
 
     <div v-if="isEditing && !editingCourse" class="empty-state">
       <h3>课程不存在</h3>
-      <p>该课程可能已被删除。</p>
-      <RouterLink class="primary-button link-button" :to="{ name: 'schedule' }">返回周视图</RouterLink>
+      <p>该课程可能已被删除</p>
     </div>
 
     <form v-else class="course-form" novalidate @submit.prevent="save">
@@ -172,6 +170,15 @@ async function save(): Promise<void> {
           <input v-model.number="form.endWeek" type="number" min="1" :max="maxWeek" placeholder="16" />
         </label>
 
+        <label class="field">
+          <span>单双周</span>
+          <select v-model="form.weekType">
+            <option value="all">每周</option>
+            <option value="odd">单周</option>
+            <option value="even">双周</option>
+          </select>
+        </label>
+
         <label class="field full">
           <span>作业</span>
           <textarea v-model.trim="form.homework" rows="3" placeholder="例如：完成第 3 章课后习题" />
@@ -193,7 +200,7 @@ async function save(): Promise<void> {
 
       <div class="form-actions">
         <button class="secondary-button" type="button" @click="resetForm">清空</button>
-        <button class="primary-button" type="submit">保存课程</button>
+        <button class="primary-button" type="submit">保存</button>
       </div>
     </form>
   </section>

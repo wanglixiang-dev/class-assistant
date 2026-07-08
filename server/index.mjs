@@ -5,12 +5,14 @@ import { createCourseRepository } from "./courses.mjs";
 import { openDatabase } from "./database.mjs";
 import { createEmailService } from "./email.mjs";
 import { createReminderService } from "./reminders.mjs";
+import { createSettingsRepository } from "./settings.mjs";
 
 const db = openDatabase(config.databasePath);
 const emailService = createEmailService(config);
 const authService = createAuthService(db, emailService, config);
 const courseRepository = createCourseRepository(db);
-const reminderService = createReminderService(db, emailService, config);
+const settingsRepository = createSettingsRepository(db, config);
+const reminderService = createReminderService(db, emailService, config, settingsRepository);
 
 const server = createServer(async (request, response) => {
   try {
@@ -88,6 +90,21 @@ async function route(request, response) {
     if (request.method === "DELETE") {
       courseRepository.deleteCourse(user.id, courseId);
       sendJson(response, 200, { ok: true });
+      return;
+    }
+  }
+
+  if (url.pathname === "/api/settings") {
+    const user = authService.authenticate(request);
+
+    if (request.method === "GET") {
+      sendJson(response, 200, { settings: settingsRepository.getSettings(user.id) });
+      return;
+    }
+
+    if (request.method === "PUT") {
+      const body = await readJson(request);
+      sendJson(response, 200, { settings: settingsRepository.saveSettings(user.id, body.settings) });
       return;
     }
   }

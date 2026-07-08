@@ -17,7 +17,7 @@ const form = reactive({
 async function sendCode(): Promise<void> {
   message.value = "";
   await authStore.sendLoginCode(form.email);
-  message.value = "验证码已发送，请查看邮箱。开发环境未配置邮件服务时，请在 API 控制台查看验证码。";
+  message.value = "验证码已发送，请查看邮箱。";
 }
 
 async function login(): Promise<void> {
@@ -29,13 +29,10 @@ async function login(): Promise<void> {
 </script>
 
 <template>
-  <section class="view active" aria-labelledby="loginTitle">
+  <section aria-labelledby="loginTitle">
     <header class="topbar compact">
-      <div>
-        <p class="eyebrow">账号</p>
-        <h2 id="loginTitle">邮箱登录</h2>
-      </div>
-      <RouterLink class="secondary-button link-button" :to="{ name: 'schedule' }">返回课表</RouterLink>
+      <h2 id="loginTitle">邮箱登录</h2>
+      <RouterLink class="secondary-button link-button" :to="{ name: 'schedule' }">返回</RouterLink>
     </header>
 
     <form class="course-form login-form" novalidate @submit.prevent="login">

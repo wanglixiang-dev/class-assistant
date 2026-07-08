@@ -1,10 +1,11 @@
 import type { Course } from "../domain/course";
-import { createDemoCourses } from "../domain/course";
+import { createDemoCourses, normalizeWeekType } from "../domain/course";
 
 const STORAGE_KEY = "class-assistant-courses";
 const LEGACY_STORAGE_KEY = "class-assistant-prototype-courses";
 const WEEK_KEY = "class-assistant-week";
 const LEGACY_WEEK_KEY = "class-assistant-prototype-week";
+const SEMESTER_START_KEY = "class-assistant-semester-start";
 
 export function loadCourses(): Course[] {
   const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -40,6 +41,18 @@ export function saveCurrentWeek(week: number): void {
   localStorage.setItem(WEEK_KEY, String(week));
 }
 
+export function loadSemesterStart(): string {
+  return localStorage.getItem(SEMESTER_START_KEY) || "";
+}
+
+export function saveSemesterStart(date: string): void {
+  if (date) {
+    localStorage.setItem(SEMESTER_START_KEY, date);
+  } else {
+    localStorage.removeItem(SEMESTER_START_KEY);
+  }
+}
+
 function migrateCourses(courses: Course[]): Course[] {
   return courses.map((course) => {
     const hasOldDemoCoordinate =
@@ -49,6 +62,7 @@ function migrateCourses(courses: Course[]): Course[] {
 
     return {
       ...course,
+      weekType: normalizeWeekType(course.weekType),
       locationName: course.locationName || "",
       locationAddress: course.locationAddress || "",
       longitude: hasOldDemoCoordinate ? null : course.longitude ?? null,

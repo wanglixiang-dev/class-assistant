@@ -1,16 +1,26 @@
 import type { Course } from "./course";
-import { getCoursesForWeek } from "./week";
+import { getCoursesForWeek, matchesWeekType } from "./week";
 
 export function rangesOverlap(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
   return aStart <= bEnd && bStart <= aEnd;
+}
+
+/** 两门课的周范围内是否存在同时上课的周（考虑单双周） */
+function weeksCanCoincide(a: Course, b: Course): boolean {
+  const start = Math.max(a.startWeek, b.startWeek);
+  const end = Math.min(a.endWeek, b.endWeek);
+  for (let week = start; week <= end; week += 1) {
+    if (matchesWeekType(a, week) && matchesWeekType(b, week)) return true;
+  }
+  return false;
 }
 
 export function isCourseConflict(a: Course, b: Course): boolean {
   if (a.id === b.id) return false;
   return (
     a.weekday === b.weekday &&
-    rangesOverlap(a.startWeek, a.endWeek, b.startWeek, b.endWeek) &&
-    rangesOverlap(a.startPeriod, a.endPeriod, b.startPeriod, b.endPeriod)
+    rangesOverlap(a.startPeriod, a.endPeriod, b.startPeriod, b.endPeriod) &&
+    weeksCanCoincide(a, b)
   );
 }
 
